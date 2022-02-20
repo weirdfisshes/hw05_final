@@ -10,7 +10,7 @@ from django import forms
 from django.conf import settings
 from django.core.cache import cache
 
-from ..models import Post, Group, User
+from ..models import Post, Group, User, Follow
 from ..forms import PostForm
 
 User = get_user_model()
@@ -193,3 +193,28 @@ class PostViewsTests(TestCase):
         response = self.authorized_client.get(reverse('posts:index'))
         after = response.content
         self.assertEqual(before, after)
+
+    def test_follow_works(self):
+        """Подписка работает."""
+        cache.clear()
+        stranger = User.objects.create_user(username='Stranger')
+        strange_client = Client()
+        strange_client.force_login(stranger)
+        author = get_object_or_404(User, username='Author')
+        response = self.authorized_client.get(reverse('posts:profile_follow', kwargs={'username': 'Author' }))
+        posts = Post.objects.filter(author__following__user=self.user).exists()
+        self.assertTrue(posts)
+        Post.objects.create(
+            text='Проверка подписок',
+            author=author,
+        )
+        response = self.authorized_client.get(reverse('posts:follow_index'))
+        post = response.context['page_obj'][0].text
+        content = response.content
+        self.assertEqual(post, 'Проверка подписок')
+        response = strange_client.get(reverse('posts:follow_index'))
+        post = response.content
+        self.assertNotEqual(post, content)
+        response = self.authorized_client.get(reverse('posts:profile_unfollow', kwargs={'username': 'Author' }))
+        posts = Post.objects.filter(author__following__user=self.user).exists()
+        self.assertFalse(posts)
