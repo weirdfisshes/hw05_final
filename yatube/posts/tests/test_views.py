@@ -10,7 +10,7 @@ from django import forms
 from django.conf import settings
 from django.core.cache import cache
 
-from ..models import Post, Group, User, Follow
+from ..models import Post, Group, User
 from ..forms import PostForm
 
 User = get_user_model()
@@ -201,7 +201,9 @@ class PostViewsTests(TestCase):
         strange_client = Client()
         strange_client.force_login(stranger)
         author = get_object_or_404(User, username='Author')
-        response = self.authorized_client.get(reverse('posts:profile_follow', kwargs={'username': 'Author' }))
+        response = self.authorized_client.get(reverse(
+            'posts:profile_follow', kwargs={'username': 'Author'})
+        )
         posts = Post.objects.filter(author__following__user=self.user).exists()
         self.assertTrue(posts)
         Post.objects.create(
@@ -215,6 +217,8 @@ class PostViewsTests(TestCase):
         response = strange_client.get(reverse('posts:follow_index'))
         post = response.content
         self.assertNotEqual(post, content)
-        response = self.authorized_client.get(reverse('posts:profile_unfollow', kwargs={'username': 'Author' }))
+        response = self.authorized_client.get(reverse(
+            'posts:profile_unfollow', kwargs={'username': 'Author'})
+        )
         posts = Post.objects.filter(author__following__user=self.user).exists()
         self.assertFalse(posts)
