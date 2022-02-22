@@ -106,7 +106,7 @@ class PostModelTest(TestCase):
             with self.subTest(value=value):
                 self.assertEqual(
                     post._meta.get_field(value).help_text, expected)
-    
+
     def test_comment_verbose_name(self):
         """Comment verbose_name в полях совпадает с ожидаемым."""
         comment = PostModelTest.comment
@@ -132,7 +132,7 @@ class PostModelTest(TestCase):
             with self.subTest(value=value):
                 self.assertEqual(
                     follow._meta.get_field(value).verbose_name, expected)
-    
+
     def test_comment_help_text(self):
         """Comment help_text в полях совпадает с ожидаемым."""
         comment = PostModelTest.comment

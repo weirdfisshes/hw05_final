@@ -85,9 +85,10 @@ class Comment(models.Model):
         'Дата',
         auto_now_add=True,
     )
-    
+
     def __str__(self):
         return self.text[:NUM_OF_SYM]
+
 
 class Follow(models.Model):
     user = models.ForeignKey(
