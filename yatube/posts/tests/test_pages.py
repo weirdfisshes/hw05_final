@@ -8,7 +8,7 @@ from ..models import Post, Group, User
 User = get_user_model()
 
 
-class PostViewsTests(TestCase):
+class PostPagesTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -26,7 +26,6 @@ class PostViewsTests(TestCase):
                 slug='slug',
                 description='Description'
             )
-
         )
 
     def setUp(self):

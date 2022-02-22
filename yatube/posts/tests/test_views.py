@@ -10,7 +10,7 @@ from django import forms
 from django.conf import settings
 from django.core.cache import cache
 
-from ..models import Post, Group, User
+from ..models import Post, Group, User, Comment
 from ..forms import PostForm
 
 User = get_user_model()
@@ -133,7 +133,7 @@ class PostViewsTests(TestCase):
         response = self.authorized_client.get(reverse(
             'posts:profile', kwargs={'username': 'Author'})
         )
-        first_object = response.context['page_obj'][1]
+        first_object = response.context['page_obj'][0]
         post_author_0 = first_object.author.username
         post_image_0 = first_object.image
         self.assertEqual(post_author_0, 'Author')
@@ -197,9 +197,6 @@ class PostViewsTests(TestCase):
     def test_follow_works(self):
         """Подписка работает."""
         cache.clear()
-        stranger = User.objects.create_user(username='Stranger')
-        strange_client = Client()
-        strange_client.force_login(stranger)
         author = get_object_or_404(User, username='Author')
         response = self.authorized_client.get(reverse(
             'posts:profile_follow', kwargs={'username': 'Author'})
@@ -212,13 +209,55 @@ class PostViewsTests(TestCase):
         )
         response = self.authorized_client.get(reverse('posts:follow_index'))
         post = response.context['page_obj'][0].text
-        content = response.content
         self.assertEqual(post, 'Проверка подписок')
-        response = strange_client.get(reverse('posts:follow_index'))
-        post = response.content
-        self.assertNotEqual(post, content)
-        response = self.authorized_client.get(reverse(
+
+    def test_follow_index_for_not_follower(self):
+        cache.clear()
+        self.authorized_client.get(reverse(
+            'posts:profile_follow', kwargs={'username': 'Author'})
+        )
+        stranger = User.objects.create_user(username='Stranger')
+        strange_client = Client()
+        strange_client.force_login(stranger)
+        author = get_object_or_404(User, username='Author')
+        Post.objects.create(
+            text='Проверка подписок',
+            author=author,
+        )
+        response_1 = strange_client.get(reverse('posts:follow_index'))
+        response_2 = self.authorized_client.get(reverse('posts:follow_index'))
+        first = response_1.content
+        second = response_2.content
+        self.assertNotEqual(first, second)
+
+    def test_unfollow(self):
+        self.authorized_client.get(reverse(
+            'posts:profile_follow', kwargs={'username': 'Author'})
+        )
+        self.authorized_client.get(reverse(
             'posts:profile_unfollow', kwargs={'username': 'Author'})
         )
         posts = Post.objects.filter(author__following__user=self.user).exists()
         self.assertFalse(posts)
+
+    def test_leave_a_comment(self):
+        """Валидная форма добавляет комментарий"""
+        post = get_object_or_404(Post, pk=self.post_id)
+        comment_count = post.comments.all().count()
+        form_data = {
+            'text': 'Тестовый комментарий',
+        }
+        response = self.authorized_client.post(
+            reverse('posts:add_comment', kwargs={'post_id': self.post_id}),
+            data=form_data,
+            follow=True
+        )
+        self.assertEqual(post.comments.all().count(), comment_count + 1)
+        self.assertRedirects(response, reverse(
+            'posts:post_detail', kwargs={'post_id': self.post_id})
+        )
+        self.assertTrue(
+            Comment.objects.filter(
+                text='Тестовый комментарий',
+            ).exists()
+        )

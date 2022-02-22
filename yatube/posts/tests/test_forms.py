@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from ..models import Post, Group, User, Comment
+from ..models import Post, Group, User
 
 User = get_user_model()
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
@@ -115,27 +115,5 @@ class PostFormsTests(TestCase):
         self.assertFalse(
             Post.objects.filter(
                 text='Тестовый заголовок',
-            ).exists()
-        )
-
-    def test_leave_a_comment(self):
-        """Валидная форма добавляет комментарий"""
-        post = get_object_or_404(Post, pk=self.post_id)
-        comment_count = post.comments.all().count()
-        form_data = {
-            'text': 'Тестовый комментарий',
-        }
-        response = self.authorized_client.post(
-            reverse('posts:add_comment', kwargs={'post_id': self.post_id}),
-            data=form_data,
-            follow=True
-        )
-        self.assertEqual(Post.objects.count(), comment_count + 1)
-        self.assertRedirects(response, reverse(
-            'posts:post_detail', kwargs={'post_id': self.post_id})
-        )
-        self.assertTrue(
-            Comment.objects.filter(
-                text='Тестовый комментарий',
             ).exists()
         )
