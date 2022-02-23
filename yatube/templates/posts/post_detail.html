@@ -42,9 +42,11 @@
       <p>
         {{ post_detail.text }}   
       </p>
-      <a class="btn btn-primary" href="{% url 'posts:post_edit' post_detail.pk %}">
-        редактировать запись
-      </a>
+      {% if edit %}
+        <a class="btn btn-primary" href="{% url 'posts:post_edit' post_detail.pk %}">
+          редактировать запись
+        </a>
+      {% endif %}
       {% if user.is_authenticated %}
         <div class="card my-4">
           <h5 class="card-header">Добавить комментарий:</h5>

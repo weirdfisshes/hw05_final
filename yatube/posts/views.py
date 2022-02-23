@@ -60,6 +60,9 @@ def profile(request, username):
 def post_detail(request, post_id):
     post_detail = get_object_or_404(Post, pk=post_id)
     author = post_detail.author
+    edit = False
+    if author == request.user:
+        edit = True
     number = author.posts.all().count()
     form = CommentForm(request.POST or None)
     comments = post_detail.comments.all()
@@ -68,6 +71,7 @@ def post_detail(request, post_id):
         'number': number,
         'comments': comments,
         'form': form,
+        'edit': edit,
     }
     return render(request, 'posts/post_detail.html', context)
 
@@ -143,6 +147,7 @@ def profile_follow(request, username):
 @login_required
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
-    if Follow.objects.filter(user=request.user, author=author):
-        Follow.objects.filter(user=request.user, author=author).delete()
+    follow = Follow.objects.filter(user=request.user, author=author)
+    if follow.exists():
+        follow.delete()
     return redirect('posts:profile', username=username)
