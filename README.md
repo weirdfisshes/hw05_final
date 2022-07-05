@@ -33,12 +33,12 @@ pip install -r requirements.txt
 Выполнить миграции:
 
 ```
-python3  api_yamdb/manage.py migrate
+python3 manage.py migrate
 ```
 
 Запустить проект:
 
 ```
-python3 ьanage.py runserver
+python3 manage.py runserver
 ```
 
