@@ -19,7 +19,7 @@ python3 -m venv env
 ```
 
 ```
-source env/bin/activate
+source venv/bin/activate
 ```
 
 Установить зависимости из файла requirements.txt:
@@ -33,12 +33,12 @@ pip install -r requirements.txt
 Выполнить миграции:
 
 ```
-python3 manage.py migrate
+python3 hw05_final/manage.py migrate
 ```
 
 Запустить проект:
 
 ```
-python3 manage.py runserver
+python3 hw05_final/manage.py runserver
 ```
 
